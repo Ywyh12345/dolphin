@@ -393,8 +393,8 @@ class Output(Processor):
 
         return chain
 
-    def plot_mcmc_trace(self, lens_name, model_id, walker_ratio,
-                        burn_in=-100, verbose=True, fig_width=16):
+    def plot_mcmc_trace(self,  lens_name, model_id, walker_ratio,
+                        burn_in=-100, verbose=True, num_var=None, fig_width=16):
         """
         Plot the trace of MCMC walkers.
 
@@ -420,6 +420,9 @@ class Output(Processor):
 
         num_params = self.num_params_mcmc
         num_step = chain.shape[1]
+
+        if num_var is not None:
+            num_params = num_var
 
         mean_pos = np.zeros((num_params, num_step))
         median_pos = np.zeros((num_params, num_step))
