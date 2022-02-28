@@ -433,8 +433,8 @@ class Output(Processor):
                                             cmap=residual_cmap, v_max=3,
                                             v_min=-3)
         model_plot.decomposition_plot(ax=axes[3],
-                                      text='Lens light convolved',
-                                      lens_light_add=True,
+                                      text='Source light convolved',
+                                      source_add=True,
                                       band_index=band_index,
                                       v_max=v_max, v_min=v_min)
         model_plot.source_plot(ax=axes[4], deltaPix_source=0.02, numPix=100,
