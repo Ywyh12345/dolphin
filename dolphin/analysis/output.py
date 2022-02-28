@@ -362,6 +362,94 @@ class Output(Processor):
 
         return fig
 
+
+    def plot_model_paper(self, lens_name, model_id=None,
+                            kwargs_result=None, band_index=0,
+                            data_cmap='cubehelix', residual_cmap='RdBu_r',
+                            convergence_cmap='afmhot',
+                            magnification_cmap='viridis',
+                            v_min=None, v_max=None, print_results=False):
+        """
+        Plot the model, residual, reconstructed source, convergence,
+        and magnification profiles. Either `model_id` or `kwargs_result`
+        needs to be provided. `kwargs_result` is prioritized for plotting if
+        both are provided.
+
+        :param lens_name: name of the lens
+        :type lens_name: `str`
+        :param model_id: model run identifier
+        :type model_id: `str`
+        :param kwargs_result: lenstronomy `kwargs_result` dictionary. If
+            provided, it will be used to plot the model, otherwise the model
+            will be plotted from the saved/loaded outputs for `lens_name` and
+            `model_id`.
+        :type kwargs_result: `dict`
+        :param band_index: index of band to plot for multi-band case
+        :type band_index: `int`
+        :param data_cmap: colormap for image, reconstruction, and source plots
+        :type data_cmap: `str` or `matplotlib.colors.Colormap`
+        :param residual_cmap: colormap for noise residual plot
+        :type residual_cmap: `str` or `matplotlib.colors.Colormap`
+        :param convergence_cmap: colormap for convergence plot
+        :type convergence_cmap: `str` or `matplotlib.colors.Colormap`
+        :param magnification_cmap: colormap for magnification plot
+        :type magnification_cmap: `str` or `matplotlib.colors.Colormap`
+        :param v_min: minimum plotting scale for the model, data, & source plot
+        :type v_min: `float` or `int`
+        :param v_max: maximum plotting scale for the model, data, & source plot
+        :type v_max: `float` or `int`
+        :return: `matplotlib.pyplot.figure` instance with the plots
+        :rtype: `matplotlib.pyplot.figure`
+        """
+        if print_results:
+            print_kwargs_result = kwargs_result
+            if kwargs_result is None:
+                print_kwargs_result =\
+                    self.load_output(lens_name, model_id)["kwargs_result"]
+            print(print_kwargs_result)
+
+        if v_max is None:
+            model_plot, v_max = self.get_model_plot(
+                                                 lens_name,
+                                                 model_id=model_id,
+                                                 kwargs_result=kwargs_result,
+                                                 band_index=band_index,
+                                                 data_cmap=data_cmap)
+        else:
+            model_plot = self.get_model_plot(lens_name,
+                                             model_id=model_id,
+                                             kwargs_result=kwargs_result,
+                                             band_index=band_index,
+                                             data_cmap=data_cmap)[0]
+
+        fig, axes = plt.subplots(1, 6, figsize=(32, 4))
+
+        model_plot.data_plot(ax=axes[0], band_index=band_index,
+                             v_max=v_max, v_min=v_min)
+        model_plot.model_plot(ax=axes[1], band_index=band_index,
+                              v_max=v_max, v_min=v_min)
+        model_plot.normalized_residual_plot(ax=axes[2],
+                                            band_index=band_index,
+                                            cmap=residual_cmap, v_max=3,
+                                            v_min=-3)
+        model_plot.decomposition_plot(ax=axes[3],
+                                      text='Lens light convolved',
+                                      lens_light_add=True,
+                                      band_index=band_index,
+                                      v_max=v_max, v_min=v_min)
+        model_plot.source_plot(ax=axes[4], deltaPix_source=0.02, numPix=100,
+                               band_index=band_index, v_max=v_max, v_min=v_min)
+        model_plot.magnification_plot(ax=axes[5],
+                                      band_index=band_index,
+                                      cmap=magnification_cmap)
+        fig.tight_layout()
+        fig.subplots_adjust(left=None, bottom=None, right=None, top=None,
+                            wspace=0., hspace=0.05)
+
+        return fig
+
+
+
     def get_reshaped_emcee_chain(self, lens_name, model_id, walker_ratio,
                                  burn_in=-100, verbose=True):
         """
