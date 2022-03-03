@@ -357,7 +357,7 @@ class ModelConfig(Config):
                 diff = min(abs(pa_light - pa_mass),
                            180 - abs(pa_light - pa_mass))
                 if diff > np.abs(max_delta):
-                    prior += -(diff-np.abs(max_delta))**2/(1e-6)
+                    prior += -(diff-np.abs(max_delta))**2/(1e-10)
 
         # Ensure q_mass is smaller than q_light for the lensing galaxy, where
         # q is the ratio between the minor axis to the major axis of a profile
@@ -388,7 +388,7 @@ class ModelConfig(Config):
                                             kwargs_lens_light[0]['e2'])[1]
                 mass_light_ratio = q_mass / q_light
                 if mass_light_ratio < max_ratio:
-                    prior += -(mass_light_ratio-max_ratio)**2/(1e-6)
+                    prior += -(mass_light_ratio-max_ratio)**2/(1e-10)
 
 
         # Provide logarithmic_prior on the source light profile
@@ -710,7 +710,7 @@ class ModelConfig(Config):
                 })
 
                 sigma.append({
-                    'theta_E': .1, 'e1': 0.1, 'e2': 0.1,
+                    'theta_E': .1, 'e1': 0.01, 'e2': 0.01,
                     'gamma': 0.02, 'center_x': 0.1,
                     'center_y': 0.1
                 })
@@ -774,7 +774,7 @@ class ModelConfig(Config):
                     'center_x': np.max(self.pixel_size) / 10.,
                     'center_y': np.max(self.pixel_size) / 10.,
                     'R_sersic': 0.05, 'n_sersic': 0.5,
-                    'e1': 0.1, 'e2': 0.1
+                    'e1': 0.01, 'e2': 0.01
                 })
 
                 lower.append({
