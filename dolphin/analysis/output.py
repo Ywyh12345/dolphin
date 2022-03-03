@@ -368,7 +368,8 @@ class Output(Processor):
                             data_cmap='cubehelix', residual_cmap='RdBu_r',
                             convergence_cmap='afmhot',
                             magnification_cmap='viridis',
-                            v_min=None, v_max=None, print_results=False):
+                            v_min=None, v_max=None, print_results=False,
+                            filter=None):
         """
         Plot the model, residual, reconstructed source, convergence,
         and magnification profiles. Either `model_id` or `kwargs_result`
@@ -425,6 +426,7 @@ class Output(Processor):
         fig, axes = plt.subplots(1, 6, figsize=(32, 4))
 
         model_plot.data_plot(ax=axes[0], band_index=band_index,
+                             text='{} {}'.format(lens_name[-10:], filter),
                              v_max=v_max, v_min=v_min)
         model_plot.model_plot(ax=axes[1], band_index=band_index,
                               v_max=v_max, v_min=v_min)
@@ -444,8 +446,8 @@ class Output(Processor):
                                       cmap=magnification_cmap)
         fig.tight_layout()
         fig.subplots_adjust(left=None, bottom=None, right=None, top=None,
-                            wspace=0., hspace=0.05)
-
+                            wspace=0., hspace=0.0)
+        plt.savefig("plots/{}_{}".format(lens_name[-10:], filter),facecolor="white")
         return fig
 
 
