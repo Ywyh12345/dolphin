@@ -482,7 +482,8 @@ class Output(Processor):
         return chain
 
     def plot_mcmc_trace(self,  lens_name, model_id, walker_ratio,
-                        burn_in=-100, verbose=True, num_var=None, fig_width=16):
+                        burn_in=-100, verbose=True, fig_width=16,
+                        show_variables=[] ):
         """
         Plot the trace of MCMC walkers.
 
@@ -509,8 +510,13 @@ class Output(Processor):
         num_params = self.num_params_mcmc
         num_step = chain.shape[1]
 
-        if num_var is not None:
-            num_params = num_var
+
+        if len(show_variables) ==0:
+            variable_list = np.arange(num_params)
+        else:
+            variable_list = []
+            for i in show_variables:
+                variable_list.append(self.params_mcmc.index(i))
 
         mean_pos = np.zeros((num_params, num_step))
         median_pos = np.zeros((num_params, num_step))
@@ -519,7 +525,7 @@ class Output(Processor):
         q84_pos = np.zeros((num_params, num_step))
 
         # chain = np.empty((nwalker, nstep, ndim), dtype = np.double)
-        for i in np.arange(num_params):
+        for i in variable_list:
             for j in np.arange(num_step):
                 mean_pos[i][j] = np.mean(chain[:, j, i])
                 median_pos[i][j] = np.median(chain[:, j, i])
@@ -527,29 +533,38 @@ class Output(Processor):
                 q16_pos[i][j] = np.percentile(chain[:, j, i], 16.)
                 q84_pos[i][j] = np.percentile(chain[:, j, i], 84.)
 
-        fig, ax = plt.subplots(num_params, sharex='all',
+        fig, ax = plt.subplots(len(variable_list), sharex='all',
                                figsize=(fig_width, int(fig_width/8) *
-                                        num_params))
+                                        len(variable_list)))
         last = num_step
         medians = []
 
-        for i in range(num_params):
+        for n,i in enumerate(variable_list):
             if verbose:
                 print(self.params_mcmc[i],
                       '{:.4f} ± {:.4f}'.format(median_pos[i][last - 1],
                                                (q84_pos[i][last - 1] -
                                                 q16_pos[i][last - 1]) / 2))
-            # ax[i].plot(mean_pos[i][:3000], c='b')
-            ax[i].plot(median_pos[i][:last], c='g')
-            # ax[i].axhline(np.mean(mean_pos[i][burnin:2900]), c='b')
-            ax[i].axhline(np.median(median_pos[i][burn_in:last]), c='r', lw=1)
-            ax[i].fill_between(np.arange(last), q84_pos[i][:last],
-                               q16_pos[i][:last], alpha=0.4)
-            # ax[i].fill_between(np.arange(last), mean_pos[i][:last] \
-            # +std_pos[i][:last], mean_pos[i][:last]-std_pos[i][:last],
-            # alpha=0.4)
-            ax[i].set_ylabel(self.params_mcmc[i], fontsize=10)
-            ax[i].set_xlim(0, last)
+            if len(show_variables) !=1 :
+                # ax[i].plot(mean_pos[i][:3000], c='b')
+                ax[n].plot(median_pos[i][:last], c='g')
+                # ax[i].axhline(np.mean(mean_pos[i][burnin:2900]), c='b')
+                ax[n].axhline(np.median(median_pos[i][burn_in:last]),
+                              c='r', lw=1)
+                ax[n].fill_between(np.arange(last), q84_pos[i][:last],
+                                   q16_pos[i][:last], alpha=0.4)
+                # ax[i].fill_between(np.arange(last), mean_pos[i][:last] \
+                # +std_pos[i][:last], mean_pos[i][:last]-std_pos[i][:last],
+                # alpha=0.4)
+                ax[n].set_ylabel(self.params_mcmc[i], fontsize=8)
+                ax[n].set_xlim(0, last)
+            else:
+                ax.plot(median_pos[i][:last], c='g')
+                ax.axhline(np.median(median_pos[i][burn_in:last]), c='r', lw=1)
+                ax.fill_between(np.arange(last), q84_pos[i][:last],
+                                   q16_pos[i][:last], alpha=0.4)
+                ax.set_ylabel(self.params_mcmc[i], fontsize=8)
+                ax.set_xlim(0, last)
 
             medians.append(np.median(median_pos[i][burn_in:last]))
 

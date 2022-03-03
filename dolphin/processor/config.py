@@ -356,10 +356,8 @@ class ModelConfig(Config):
 
                 diff = min(abs(pa_light - pa_mass),
                            180 - abs(pa_light - pa_mass))
-                if diff < np.abs(max_delta):
-                    prior += 0.0
-                else:
-                    prior += -np.inf
+                if diff > np.abs(max_delta):
+                    prior += -(diff-np.abs(max_delta))**2/(1e-6)
 
         # Ensure q_mass is smaller than q_light for the lensing galaxy, where
         # q is the ratio between the minor axis to the major axis of a profile
@@ -388,10 +386,10 @@ class ModelConfig(Config):
                                            kwargs_lens[0]['e2'])[1]
                 q_light = ellipticity2phi_q(kwargs_lens_light[0]['e1'],
                                             kwargs_lens_light[0]['e2'])[1]
-                if q_mass / q_light >= max_ratio:
-                    prior += 0.0
-                else:
-                    prior += -np.inf
+                mass_light_ratio = q_mass / q_light
+                if mass_light_ratio < max_ratio:
+                    prior += -(mass_light_ratio-max_ratio)**2/(1e-6)
+
 
         # Provide logarithmic_prior on the source light profile
         if 'source_light_option' in self.settings and \
